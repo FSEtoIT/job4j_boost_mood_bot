@@ -32,6 +32,8 @@ hs_err_pid*
 
 # Системные файлы
 target
+config/*
+dev/*
 .DS_Store
 Thumbs.db
 

@@ -1,3 +1,6 @@
+/*
+Temporary deleted
+
 package ru.job4j.bmb.repository;
 
 import org.springframework.context.annotation.Profile;
@@ -29,3 +32,5 @@ public class UserFakeRepository implements UserRepository {
         userMap.put(user.getClientId(), user);
     }
 }
+
+ */

@@ -1,4 +1,4 @@
-package ru.job4j.bmb.content;
+package ru.job4j.bmb.model;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.InputFile;

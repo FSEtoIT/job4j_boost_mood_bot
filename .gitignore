@@ -1,4 +1,18 @@
+# Игнорируем скомпилированные бинарные файлы
+*.o
+*.so
+*.exe
+*.dll
 *.class
+
+# Игнорируем каталоги сборки
+build/
+bin/
+out/
+
+# Файлы CMake (если не нужны)
+CMakeCache.txt
+CMakeFiles/
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -11,10 +25,16 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-.idea
+# IDE / редакторы
+.idea/
+.vscode/
 *.iml
 
+# Системные файлы
 target
+.DS_Store
+Thumbs.db
 
-out
+# Игнорируем логи и временные файлы
 *.log
+*.tmp

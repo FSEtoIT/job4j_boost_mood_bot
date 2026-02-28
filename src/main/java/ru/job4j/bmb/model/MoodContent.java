@@ -17,8 +17,15 @@ public class MoodContent {
     public MoodContent(){
     }
 
-    public MoodContent(Long id){
+    public MoodContent(Long id, Mood mood, String text){
         this.id = id;
+        this.mood = mood;
+        this.text = text;
+    }
+
+    public MoodContent(Mood mood, String text) {
+        this.mood = mood;
+        this.text = text;
     }
 
     public Long getId() {
@@ -27,6 +34,22 @@ public class MoodContent {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Mood getMood() {
+        return mood;
+    }
+
+    public void setMood(Mood mood) {
+        this.mood = mood;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     @Override

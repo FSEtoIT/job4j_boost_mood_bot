@@ -24,7 +24,7 @@ public class RemindService implements BeanNameAware {
         for (var user : userRepository.findAll()) {
             var message = new SendMessage();
             message.setChatId(user.getChatId());
-            message.setText("Ping");
+            message.setText("С Днем Рождения, Любимая! ❤\uFE0F");
             tgRemoteService.send(message);
         }
     }

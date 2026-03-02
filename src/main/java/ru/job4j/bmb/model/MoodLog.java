@@ -21,6 +21,27 @@ public class MoodLog {
     public MoodLog(){
     }
 
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Mood getMood() {
+        return mood;
+    }
+
+    public void setMood(Mood mood) {
+        this.mood = mood;
+    }
+
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public MoodLog(Long id){
         this.id = id;
     }

@@ -26,6 +26,7 @@ public class MoodService implements BeanNameAware {
     private final MoodLogRepository moodLogRepository;
     private final RecommendationEngine recommendationEngine;
     private final UserRepository userRepository;
+    private final AchievementRepository achievementRepository;
     private final AwardRepository awardRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
@@ -34,10 +35,12 @@ public class MoodService implements BeanNameAware {
     public MoodService(MoodLogRepository moodLogRepository,
                        RecommendationEngine recommendationEngine,
                        UserRepository userRepository,
-                       AchievementRepository achievementRepository, AwardRepository awardRepository) {
+                       AchievementRepository achievementRepository,
+                       AwardRepository awardRepository) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
+        this.achievementRepository = achievementRepository;
         this.awardRepository = awardRepository;
     }
 
@@ -100,7 +103,6 @@ public class MoodService implements BeanNameAware {
                     .append(log.getMood().getText())
                     .append("\n");
         });
-
         return sb.toString();
     }
 
@@ -156,5 +158,23 @@ public class MoodService implements BeanNameAware {
     @PreDestroy
     public void destroy() {
         System.out.println("MoodService уничтожается");
+    }
+
+    public Content weekMoodLog(User user) {
+        var content = new Content(user.getChatId());
+        content.setText("Лог настроений за неделю (заглушка)");
+        return content;
+    }
+
+    public Content monthMoodLog(User user) {
+        var content = new Content(user.getChatId());
+        content.setText("Лог настроений за месяц (заглушка)");
+        return content;
+    }
+
+    public Content getAwards(User user) {
+        var content = new Content(user.getChatId());
+        content.setText("Список наград пользователя (заглушка)");
+        return content;
     }
 }

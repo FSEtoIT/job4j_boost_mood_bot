@@ -8,7 +8,6 @@ import ru.job4j.bmb.model.Content;
 
 @Service
 public class TelegramBotService implements BeanNameAware {
-
     private final BotCommandHandler handler;
     private String beanName;
 

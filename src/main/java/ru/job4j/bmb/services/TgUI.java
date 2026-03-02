@@ -19,9 +19,11 @@ public class TgUI {
     public InlineKeyboardMarkup buildButtons() {
         var inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        for (var mood : moodRepository.findAll()) {
-            keyboard.add(List.of(createBtn(mood.getText(), mood.getId())));
-        }
+
+        moodRepository.findAll().forEach(mood ->
+                keyboard.add(List.of(createBtn(mood.getText(), mood.getId())))
+        );
+
         inlineKeyboardMarkup.setKeyboard(keyboard);
         return inlineKeyboardMarkup;
     }
@@ -33,4 +35,3 @@ public class TgUI {
         return inline;
     }
 }
-

@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class AchievementService implements BeanNameAware {
 
-private String beanName;
+    private String beanName;
 
-@Override
-public void setBeanName(String name) {
-    this.beanName = name;
-    System.out.println("Имя бина в Spring-контексте: " + name);
-}
+    @Override
+    public void setBeanName(String name) {
+        this.beanName = name;
+        System.out.println("Имя бина в Spring-контексте: " + name);
+    }
 
     @PostConstruct
     public void init() {

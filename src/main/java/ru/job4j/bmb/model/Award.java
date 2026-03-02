@@ -48,8 +48,12 @@ public class Award {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Award award)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Award award)) {
+            return false;
+        }
         return id != null && id.equals(award.id);
     }
 

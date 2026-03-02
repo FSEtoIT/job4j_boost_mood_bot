@@ -35,8 +35,12 @@ public class MoodLog {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MoodLog moodLog)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MoodLog moodLog)) {
+            return false;
+        }
         return id != null && id.equals(moodLog.id);
     }
 

@@ -75,11 +75,45 @@ public class TgRemoteService extends TelegramLongPollingBot {
     private static final Map<String, String> MOOD_RESP = new HashMap<>();
 
     static {
-        MOOD_RESP.put("lost_sock", "Носки — это коварные создания. Но не волнуйся, второй обязательно найдётся!");
-        MOOD_RESP.put("cucumber", "Огурец тоже дело серьёзное! Главное, не мариноваться слишком долго.");
-        MOOD_RESP.put("dance_ready", "Супер! Танцуй, как будто никто не смотрит. Или, наоборот, как будто все смотрят!");
-        MOOD_RESP.put("need_coffee", "Кофе уже в пути! Осталось только подождать... И ещё немного подождать...");
-        MOOD_RESP.put("sleepy", "Пора на боковую! Даже супергерои отдыхают, ты не исключение.");
+        MOOD_RESP.put("lost_sock", "Щенок белоснежный, лишь рыжие пятна.\n " +
+                "Лишь рыжие пятна и кисточкой хвост.\n" +
+                "Он очень занятный, он очень занятный.\n" +
+                "Совсем еще глупый доверчивый пёс.\n" +
+                "Он очень занятный, он очень занятный.\n " +
+                "Совсем еще глупый, доверчивый пёс!\n");
+        MOOD_RESP.put("cucumber", "Спят усталые игрушки,книжки спят.\n " +
+                "Одеяла и подушки ждут ребят.\n" +
+                "Даже сказка спать ложится.\n " +
+                "Чтобы ночью нам присниться. \n" +
+                "Ты ей пожелай: баю-бай.\n");
+        MOOD_RESP.put("dance_ready", "На танцующих утят быть похожими хотят.\n" +
+                "Быть похожими хотят не зря, не зря.\n" +
+                "Даже бабушка и дед, сбросив восемьдесят лет.\n" +
+                "За утятами вослед кричат «кря-кря».\n" +
+                "Вместе солнце, речка, дом кружат в танце озорном.\n" +
+                "Кружат в танце озорном не зря, не зря.\n" +
+                "Неуклюжий бегемот, ничего не разберет.\n" +
+                "Но старательно поет «кря-кря-кря-кря».");
+        MOOD_RESP.put("need_coffee", "Вместе весело шагать по просторам \n" +
+                "По просторам,по просторам!\n" +
+                "И конечно припевать лучше хором\n" +
+                "Лучше хором, лучше хором!\n" +
+                "Спой-ка с нами, перепелка-перепелочка\n" +
+                "Раз иголка, два иголка — будет елочка!\n" +
+                "Раз дощечка, два дощечка — будет лесенка!\n" +
+                "Раз словечко, два словечко — будет песенка!\n" +
+                "В небесах зари полоска заполощется\n" +
+                "Раз березка, два березка — будет рощица!\n" +
+                "Раз дощечка,два дощечка — будет лесенка!\n" +
+                "Раз словечко,два словечко — будет песенка!\n" +
+                "Нам счастливую тропинку выбрать надобно.\n" +
+                "Раз дождинка, два дождинка — будет радуга!\n" +
+                "Раз дощечка, два дощечка — будет лесенка!\n" +
+                "Раз словечко, два словечко — будет песенка!");
+        MOOD_RESP.put("sleepy", "Ложкой снег мешая, ночь идет большая\n" +
+                "Что же ты, глупышка, не спишь?\n" +
+                "Спят твои соседи, белые медведи\n" +
+                "Спи скорей и ты, малыш...");
     }
 
     public void send(SendMessage message) {
@@ -100,16 +134,16 @@ public class TgRemoteService extends TelegramLongPollingBot {
     public SendMessage sendButtons(long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText("Как настроение сегодня?");
+        message.setText("Какую песенку спеть ?");
 
         var inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        keyboard.add(List.of(createBtn("Потерял носок \uD83D\uDE22", "lost_sock")));
-        keyboard.add(List.of(createBtn("Как огурец на полке \uD83D\uDE10", "cucumber")));
-        keyboard.add(List.of(createBtn("Готов к танцам \uD83D\uDE04", "dance_ready")));
-        keyboard.add(List.of(createBtn("Где мой кофе?! \uD83D\uDE23", "need_coffee")));
-        keyboard.add(List.of(createBtn("Слипаются глаза \uD83D\uDE29", "sleepy")));
+        keyboard.add(List.of(createBtn("Пропала собака \uD83D\uDE22", "lost_sock")));
+        keyboard.add(List.of(createBtn("Спят усталые игрушки \uD83D\uDE10", "cucumber")));
+        keyboard.add(List.of(createBtn("Танец маленьких утят \uD83D\uDE04", "dance_ready")));
+        keyboard.add(List.of(createBtn("Вместе весело шагать \uD83D\uDE23", "need_coffee")));
+        keyboard.add(List.of(createBtn("Колыбельная медведицы \uD83D\uDE29", "sleepy")));
 
         inlineKeyboardMarkup.setKeyboard(keyboard);
         message.setReplyMarkup(inlineKeyboardMarkup);

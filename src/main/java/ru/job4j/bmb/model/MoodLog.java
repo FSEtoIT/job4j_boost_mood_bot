@@ -18,7 +18,7 @@ public class MoodLog {
     private Mood mood;
     private long createdAt;
 
-    public MoodLog(){
+    public MoodLog() {
     }
 
     public long getCreatedAt() {
@@ -37,12 +37,11 @@ public class MoodLog {
         this.mood = mood;
     }
 
-
     public void setUser(User user) {
         this.user = user;
     }
 
-    public MoodLog(Long id){
+    public MoodLog(Long id) {
         this.id = id;
     }
 

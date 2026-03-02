@@ -14,10 +14,10 @@ public class MoodContent {
     private Mood mood;
     private String text;
 
-    public MoodContent(){
+    public MoodContent() {
     }
 
-    public MoodContent(Long id, Mood mood, String text){
+    public MoodContent(Long id, Mood mood, String text) {
         this.id = id;
         this.mood = mood;
         this.text = text;

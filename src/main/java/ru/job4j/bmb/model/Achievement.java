@@ -43,7 +43,6 @@ public class Achievement {
         this.createAt = createAt;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {

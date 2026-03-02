@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class MoodService implements BeanNameAware{
+public class MoodService implements BeanNameAware {
 
     private final MoodLogRepository moodLogRepository;
     private final RecommendationEngine recommendationEngine;
@@ -109,28 +109,21 @@ public class MoodService implements BeanNameAware{
         if (user.isEmpty()) {
             return Optional.empty();
         }
-
         var logs = moodLogRepository.findByUserOrderByCreatedAtDesc(user);
-
         int goodDays = 0;
-
         for (var log : logs) {
             if (log.getMood().isGood()) {
                 goodDays++;
             } else {
-                break; // как только плохое настроение — цепочка прерывается
+                break;
             }
         }
-
         var allAwards = awardRepository.findAll();
-
         int finalGoodDays = goodDays;
         var achievedAwards = allAwards.stream()
                 .filter(a -> a.getDays() <= finalGoodDays)
                 .toList();
-
         var content = new Content(chatId);
-
         if (achievedAwards.isEmpty()) {
             content.setText("You have no awards yet. Keep going!");
         } else {
@@ -144,7 +137,6 @@ public class MoodService implements BeanNameAware{
             );
             content.setText(sb.toString());
         }
-
         return Optional.of(content);
     }
 

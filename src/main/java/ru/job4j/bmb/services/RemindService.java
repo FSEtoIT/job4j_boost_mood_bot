@@ -1,47 +1,32 @@
 package ru.job4j.bmb.services;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.job4j.bmb.repository.UserRepository;
 
 @Service
-public class RemindService implements BeanNameAware {
+public class RemindService {
 
-    private String beanName;
-    private final TgRemoteService tgRemoteService;
+    private final TgRemoteService bot;
+    private final TgMessageService messageService;
     private final UserRepository userRepository;
 
-    public RemindService(TgRemoteService tgRemoteService, UserRepository userRepository) {
-        this.tgRemoteService = tgRemoteService;
+    public RemindService(TgRemoteService bot, TgMessageService messageService, UserRepository userRepository) {
+        this.bot = bot;
+        this.messageService = messageService;
         this.userRepository = userRepository;
     }
+
     @Scheduled(fixedRateString = "${remind.period}")
     public void ping() {
         for (var user : userRepository.findAll()) {
-            var message = new SendMessage();
-            message.setChatId(user.getChatId());
-            message.setText("Не забывайте отмечаться! ❤\uFE0F");
-            tgRemoteService.send(message);
+
+            var msg = new SendMessage();
+            msg.setChatId(user.getChatId());
+            msg.setText("Не забывайте отмечать настроение ;)");
+
+            messageService.send(bot, msg);
         }
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-        System.out.println("Имя бина в Spring-контексте: " + name);
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("RemindService инициализирован");
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("RemindService уничтожается");
     }
 }

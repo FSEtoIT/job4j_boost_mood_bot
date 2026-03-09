@@ -1,4 +1,6 @@
+/*
 package ru.job4j.bmb.services;
+
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -69,3 +71,5 @@ public class TgRemoteService extends TelegramLongPollingBot {
         return botToken;
     }
 }
+
+ */

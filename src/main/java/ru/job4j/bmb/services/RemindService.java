@@ -8,11 +8,11 @@ import ru.job4j.bmb.repository.UserRepository;
 @Service
 public class RemindService {
 
-    private final TgRemoteService bot;
+    private final TelegramBotService bot;
     private final TgMessageService messageService;
     private final UserRepository userRepository;
 
-    public RemindService(TgRemoteService bot, TgMessageService messageService, UserRepository userRepository) {
+    public RemindService(TelegramBotService bot, TgMessageService messageService, UserRepository userRepository) {
         this.bot = bot;
         this.messageService = messageService;
         this.userRepository = userRepository;

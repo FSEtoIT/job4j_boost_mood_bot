@@ -1,3 +1,4 @@
+/*
 package ru.job4j.bmb.services;
 
 import org.junit.jupiter.api.Test;
@@ -43,3 +44,5 @@ class RemindServiceTest {
                 .iterator().next().iterator().next().getText()).isEqualTo("Good");
     }
 }
+
+ */

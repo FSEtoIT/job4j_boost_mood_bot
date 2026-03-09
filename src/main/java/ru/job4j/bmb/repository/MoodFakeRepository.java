@@ -1,4 +1,3 @@
-/*
 package ru.job4j.bmb.repository;
 
 
@@ -17,5 +16,3 @@ public class MoodFakeRepository
         return new ArrayList<>(memory.values());
     }
 }
-
- */

@@ -39,18 +39,9 @@ public class BotCommandHandler implements BeanNameAware {
 
         return switch (text) {
             case "/start" -> handleStartCommand(chatId, clientId);
-            case "/week_mood_log" -> {
-                var user = userRepository.findByClientId(clientId);
-                yield user.map(moodService::weekMoodLog);
-            }
-            case "/month_mood_log" -> {
-                var user = userRepository.findByClientId(clientId);
-                yield user.map(moodService::monthMoodLog);
-            }
-            case "/award" -> {
-                var user = userRepository.findByClientId(clientId);
-                yield user.map(moodService::getAwards);
-            }
+            case "/week_mood_log" -> moodService.weekMoodLogCommand(chatId, clientId);
+            case "/month_mood_log" -> moodService.monthMoodLogCommand(chatId, clientId);
+            case "/award" -> moodService.awards(chatId, clientId);
             default -> Optional.empty();
         };
     }

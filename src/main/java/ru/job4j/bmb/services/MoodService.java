@@ -3,11 +3,9 @@ package ru.job4j.bmb.services;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import ru.job4j.bmb.model.Content;
-import ru.job4j.bmb.model.Mood;
-import ru.job4j.bmb.model.MoodLog;
-import ru.job4j.bmb.model.User;
+import ru.job4j.bmb.model.*;
 import ru.job4j.bmb.repository.AchievementRepository;
 import ru.job4j.bmb.repository.AwardRepository;
 import ru.job4j.bmb.repository.MoodLogRepository;
@@ -28,6 +26,7 @@ public class MoodService implements BeanNameAware {
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
     private final AwardRepository awardRepository;
+    private final ApplicationEventPublisher publisher;
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
@@ -36,12 +35,13 @@ public class MoodService implements BeanNameAware {
                        RecommendationEngine recommendationEngine,
                        UserRepository userRepository,
                        AchievementRepository achievementRepository,
-                       AwardRepository awardRepository) {
+                       AwardRepository awardRepository, ApplicationEventPublisher publisher) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
         this.achievementRepository = achievementRepository;
         this.awardRepository = awardRepository;
+        this.publisher = publisher;
     }
 
     public Content chooseMood(User user, Long moodId) {
@@ -51,7 +51,7 @@ public class MoodService implements BeanNameAware {
         moodLog.setCreatedAt(Instant.now().getEpochSecond());
 
         moodLogRepository.save(moodLog);
-
+        publisher.publishEvent(new UserEvent(this, user)); // Публикация события
         return recommendationEngine.recommendFor(user.getChatId(), moodId);
     }
 

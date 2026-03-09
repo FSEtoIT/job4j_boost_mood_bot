@@ -2,18 +2,33 @@ package ru.job4j.bmb.services;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.job4j.bmb.model.Award;
+import ru.job4j.bmb.model.MoodLog;
+import ru.job4j.bmb.model.SentContent;
+import ru.job4j.bmb.model.UserEvent;
+import ru.job4j.bmb.model.Content;
+import ru.job4j.bmb.repository.AwardRepository;
+import ru.job4j.bmb.repository.MoodLogRepository;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
-public class AchievementService implements BeanNameAware {
+public class AchievementService implements ApplicationListener<UserEvent> {
 
-    private String beanName;
+    private final MoodLogRepository moodLogRepository;
+    private final AwardRepository awardRepository;
+    private final SentContent sentContent;
 
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-        System.out.println("Имя бина в Spring-контексте: " + name);
+    public AchievementService(MoodLogRepository moodLogRepository,
+                              AwardRepository awardRepository,
+                              SentContent sentContent) {
+        this.moodLogRepository = moodLogRepository;
+        this.awardRepository = awardRepository;
+        this.sentContent = sentContent;
     }
 
     @PostConstruct
@@ -24,5 +39,42 @@ public class AchievementService implements BeanNameAware {
     @PreDestroy
     public void destroy() {
         System.out.println("AchievementService уничтожается");
+    }
+
+    @Transactional
+    @Override
+    public void onApplicationEvent(UserEvent event) {
+        var user = event.getUser();
+        List<MoodLog> logs = moodLogRepository.findByUserOrderByCreatedAtDesc(Optional.of(user));
+
+        int goodDays = 0;
+        for (var log : logs) {
+            if (log.getMood().isGood()) {
+                goodDays++;
+            } else {
+                break;
+            }
+        }
+
+        int finalGoodDays = goodDays;
+
+        List<Award> allAwards = awardRepository.findAll();
+        List<Award> newAwards = allAwards.stream()
+                .filter(a -> a.getDays() <= finalGoodDays)
+                .toList();
+
+        if (!newAwards.isEmpty()) {
+            var sb = new StringBuilder("Поздравляем! Вы получили награды:\n");
+            newAwards.forEach(a -> sb.append("- ")
+                    .append(a.getTitle())
+                    .append(" (")
+                    .append(a.getDays())
+                    .append(" дней)\n")
+            );
+
+            var content = new Content(user.getChatId());
+            content.setText(sb.toString());
+            sentContent.sent(content);
+        }
     }
 }

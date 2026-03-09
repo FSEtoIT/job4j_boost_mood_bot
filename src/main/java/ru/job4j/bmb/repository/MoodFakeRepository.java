@@ -1,4 +1,6 @@
+/*
 package ru.job4j.bmb.repository;
+
 
 import org.springframework.test.fake.CrudRepositoryFake;
 import ru.job4j.bmb.model.Mood;
@@ -15,3 +17,5 @@ public class MoodFakeRepository
         return new ArrayList<>(memory.values());
     }
 }
+
+ */

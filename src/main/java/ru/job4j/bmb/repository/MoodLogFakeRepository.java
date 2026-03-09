@@ -1,4 +1,6 @@
+/*
 package ru.job4j.bmb.repository;
+
 
 import org.springframework.test.fake.CrudRepositoryFake;
 import ru.job4j.bmb.model.MoodLog;
@@ -74,3 +76,5 @@ public class MoodLogFakeRepository
                 .collect(Collectors.toList());
     }
 }
+
+ */

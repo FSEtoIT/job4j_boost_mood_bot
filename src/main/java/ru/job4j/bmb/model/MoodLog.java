@@ -68,4 +68,12 @@ public class MoodLog {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+    public Long getChatId() {
+        return getChatId();
+    }
+
+    public User getUser() {
+        return user;
+    }
 }

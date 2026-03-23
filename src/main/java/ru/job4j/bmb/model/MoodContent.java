@@ -52,6 +52,10 @@ public class MoodContent {
         this.text = text;
     }
 
+    public String getContent() {
+        return text;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

@@ -44,8 +44,10 @@ public class AchievementService implements ApplicationListener<UserEvent> {
     @Transactional
     @Override
     public void onApplicationEvent(UserEvent event) {
-        var user = event.getUser();
-        List<MoodLog> logs = moodLogRepository.findByUserOrderByCreatedAtDesc(Optional.of(user));
+        var user = event.getUser(); // User, не Optional<User>
+
+        // Получаем логи пользователя
+        List<MoodLog> logs = moodLogRepository.findByUserOrderByCreatedAtDesc(user);
 
         int goodDays = 0;
         for (var log : logs) {

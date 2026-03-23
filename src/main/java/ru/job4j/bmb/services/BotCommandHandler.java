@@ -42,6 +42,14 @@ public class BotCommandHandler implements BeanNameAware {
             case "/week_mood_log" -> moodService.weekMoodLogCommand(chatId, clientId);
             case "/month_mood_log" -> moodService.monthMoodLogCommand(chatId, clientId);
             case "/award" -> moodService.awards(chatId, clientId);
+            case "/daily_advice" -> {
+                var userOpt = userRepository.findByClientId(clientId);
+                if (userOpt.isPresent()) {
+                    yield Optional.of(moodService.dailyAdvice(userOpt.get()));
+                } else {
+                    yield Optional.empty();
+                }
+            }
             default -> Optional.empty();
         };
     }
@@ -58,7 +66,12 @@ public class BotCommandHandler implements BeanNameAware {
         user.setChatId(chatId);
         userRepository.save(user);
         var content = new Content(user.getChatId());
-        content.setText("Как настроение?");
+        content.setText("Как настроение? \n"
+                + "Используй команды \n"
+                + "/award - для вывода наград. \n"
+                + "/week_mood_log - список настроения за неделю. \n"
+                + "/month_mood_log - список настроения за месяц. \n"
+                + "/daily_advice - случайный совет дня.");
         content.setMarkup(tgUI.buildButtons());
         return Optional.of(content);
     }

@@ -1,33 +1,34 @@
 package ru.job4j.bmb.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.job4j.bmb.model.MoodLog;
 import ru.job4j.bmb.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Repository
-public interface MoodLogRepository extends CrudRepository<MoodLog, Long> {
-    List<MoodLog> findAll();
+public interface MoodLogRepository extends JpaRepository<MoodLog, Long> {
 
-    List<MoodLog> findByUserAndCreatedAtAfter(User user, long createdAt);
+    List<MoodLog> findByUserAndCreatedAtAfter(User user, long timestamp);
 
-    List<MoodLog> findByUserOrderByCreatedAtDesc(Optional<User> user);
+    List<MoodLog> findByUserOrderByCreatedAtDesc(User user);
 
-    List<MoodLog> findByUserId(Long userId);
-
-    Stream<MoodLog> findByUserIdOrderByCreatedAtDesc(Long userId);
+    Optional<MoodLog> findTopByUserOrderByCreatedAtDesc(User user); // новый метод для последнего настроения
 
     @Query("""
-           select u from User u
-           where u not in (
-               select ml.user from MoodLog ml
-               where ml.createdAt between :startOfDay and :endOfDay
-           )
-           """)
-    List<User> findUsersWhoDidNotVoteToday(long startOfDay, long endOfDay);
+        SELECT u
+        FROM User u
+        WHERE u.id NOT IN (
+            SELECT m.user.id
+            FROM Mood m
+            WHERE m.createdAt BETWEEN :startOfDay AND :endOfDay
+        )
+    """)
+    List<User> findUsersWhoDidNotVoteToday(@Param("startOfDay") LocalDateTime startOfDay,
+                                           @Param("endOfDay") LocalDateTime endOfDay);
 }

@@ -24,15 +24,10 @@ public class RemindService {
 
     @Scheduled(fixedRateString = "${recommendation.alert.period}")
     public void remindUsers() {
-        var startOfDay = LocalDate.now()
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
-        var endOfDay = LocalDate.now()
-                .plusDays(1)
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli() - 1;
+        // Границы текущего дня
+        var startOfDay = LocalDate.now().atStartOfDay(); // LocalDateTime
+        var endOfDay = LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1); // LocalDateTime до конца дня
+
         for (var user : moodLogRepository.findUsersWhoDidNotVoteToday(startOfDay, endOfDay)) {
             var content = new Content(user.getChatId());
             content.setText("Как настроение?");

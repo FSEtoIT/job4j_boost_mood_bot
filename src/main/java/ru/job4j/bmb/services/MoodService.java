@@ -6,20 +6,21 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import ru.job4j.bmb.model.*;
-import ru.job4j.bmb.repository.AchievementRepository;
-import ru.job4j.bmb.repository.AwardRepository;
-import ru.job4j.bmb.repository.MoodLogRepository;
-import ru.job4j.bmb.repository.UserRepository;
+import ru.job4j.bmb.repository.*;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class MoodService implements BeanNameAware {
+
+    private String beanName;
 
     private final MoodLogRepository moodLogRepository;
     private final RecommendationEngine recommendationEngine;
@@ -27,6 +28,7 @@ public class MoodService implements BeanNameAware {
     private final AchievementRepository achievementRepository;
     private final AwardRepository awardRepository;
     private final ApplicationEventPublisher publisher;
+    private final MoodRepository moodRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
@@ -35,13 +37,16 @@ public class MoodService implements BeanNameAware {
                        RecommendationEngine recommendationEngine,
                        UserRepository userRepository,
                        AchievementRepository achievementRepository,
-                       AwardRepository awardRepository, ApplicationEventPublisher publisher) {
+                       AwardRepository awardRepository,
+                       ApplicationEventPublisher publisher,
+                       MoodRepository moodRepository) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
         this.achievementRepository = achievementRepository;
         this.awardRepository = awardRepository;
         this.publisher = publisher;
+        this.moodRepository = moodRepository;
     }
 
     public Content chooseMood(User user, Long moodId) {
@@ -67,7 +72,7 @@ public class MoodService implements BeanNameAware {
         var logs = moodLogRepository.findByUserAndCreatedAtAfter(user, weekAgo);
 
         var content = new Content(chatId);
-        content.setText(formatMoodLogs(logs, "Mood log for last week"));
+        content.setText(formatMoodLogs(logs, "Ваше настроение за неделю:"));
         return Optional.of(content);
     }
 
@@ -83,13 +88,13 @@ public class MoodService implements BeanNameAware {
         var logs = moodLogRepository.findByUserAndCreatedAtAfter(user, monthAgo);
 
         var content = new Content(chatId);
-        content.setText(formatMoodLogs(logs, "Mood log for last month"));
+        content.setText(formatMoodLogs(logs, "Ваше настроение за месяц:"));
         return Optional.of(content);
     }
 
     private String formatMoodLogs(List<MoodLog> logs, String title) {
         if (logs.isEmpty()) {
-            return title + ":\nNo mood logs found.";
+            return title + "\nЗаписей о настроении не найдено.";
         }
 
         var sb = new StringBuilder(title + ":\n");
@@ -107,11 +112,14 @@ public class MoodService implements BeanNameAware {
     }
 
     public Optional<Content> awards(long chatId, Long clientId) {
-        var user = userRepository.findByClientId(clientId);
-        if (user.isEmpty()) {
+        var userOpt = userRepository.findByClientId(clientId);
+        if (userOpt.isEmpty()) {
             return Optional.empty();
         }
+        var user = userOpt.get(); // получаем объект User
+
         var logs = moodLogRepository.findByUserOrderByCreatedAtDesc(user);
+
         int goodDays = 0;
         for (var log : logs) {
             if (log.getMood().isGood()) {
@@ -120,29 +128,52 @@ public class MoodService implements BeanNameAware {
                 break;
             }
         }
+
         var allAwards = awardRepository.findAll();
         int finalGoodDays = goodDays;
         var achievedAwards = allAwards.stream()
                 .filter(a -> a.getDays() <= finalGoodDays)
                 .toList();
+
         var content = new Content(chatId);
         if (achievedAwards.isEmpty()) {
-            content.setText("You have no awards yet. Keep going!");
+            content.setText("У вас еще нет наград. Отметьте свое настроение!");
         } else {
-            var sb = new StringBuilder("Your awards:\n");
+            var sb = new StringBuilder("Ваши награды:\n");
             achievedAwards.forEach(a ->
                     sb.append("- ")
                             .append(a.getTitle())
                             .append(" (")
                             .append(a.getDays())
-                            .append(" days)\n")
+                            .append(" дней)\n")
             );
             content.setText(sb.toString());
         }
         return Optional.of(content);
     }
 
-    private String beanName;
+    public Content dailyAdvice(User user) {
+        // Находим последний MoodLog пользователя
+        var lastMoodLogOpt = moodLogRepository.findTopByUserOrderByCreatedAtDesc(user);
+
+        Long moodId;
+        if (lastMoodLogOpt.isPresent()) {
+            // Берем moodId из последнего лога
+            moodId = lastMoodLogOpt.get().getMood().getId();
+        } else {
+            // Если логов нет, берем случайное настроение из MoodRepository
+            List<Mood> allMoods = moodRepository.findAll();
+            if (allMoods.isEmpty()) {
+                Content content = new Content(user.getChatId());
+                content.setText("Нет доступных настроений для совета сегодня.");
+                return content;
+            }
+            moodId = allMoods.get(new Random().nextInt(allMoods.size())).getId();
+        }
+
+        // Получаем текст рекомендации через RecommendationEngine
+        return recommendationEngine.recommendFor(user.getChatId(), moodId);
+    }
 
     @Override
     public void setBeanName(String name) {

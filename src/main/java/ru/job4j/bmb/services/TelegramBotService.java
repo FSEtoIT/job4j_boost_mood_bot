@@ -12,16 +12,14 @@ import ru.job4j.bmb.condition.RealBotCondition;
 import ru.job4j.bmb.model.Content;
 import ru.job4j.bmb.model.SentContent;
 import ru.job4j.bmb.model.SentContentException;
-import ru.job4j.bmb.model.User;
-import ru.job4j.bmb.repository.UserRepository;
+
+import java.util.Optional;
 
 @Service
 @Conditional(RealBotCondition.class)
 public class TelegramBotService extends TelegramLongPollingBot implements SentContent {
+
     private final BotCommandHandler handler;
-    private final UserRepository userRepository;
-    private final TgMoodButtonService moodButtonService;
-    private final TgMessageService messageService;
 
     @Value("${telegram.bot.name}")
     private String botUsername;
@@ -29,42 +27,25 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
     @Value("${telegram.bot.token}")
     private String botToken;
 
-    public TelegramBotService(BotCommandHandler handler, UserRepository userRepository,
-                              TgMoodButtonService moodButtonService,
-                              TgMessageService messageService) {
+    public TelegramBotService(BotCommandHandler handler) {
         this.handler = handler;
-        this.userRepository = userRepository;
-        this.moodButtonService = moodButtonService;
-        this.messageService = messageService;
     }
 
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             var message = update.getMessage();
-
-            if ("/start".equals(message.getText())) {
-                long chatId = message.getChatId();
-                var user = new User();
-                user.setClientId(message.getFrom().getId());
-                user.setChatId(chatId);
-                userRepository.save(user);
-
-                SendMessage msg = moodButtonService.createButtonsMessage(chatId, "Привет!\n"
-                        + "Я бот для улучшения твоего настроения.");
-                messageService.send(this, msg);
+            Optional<Content> commandContent = handler.commands(message);
+            commandContent.ifPresent(this::sent);
+            if (commandContent.isPresent()) {
+                return;
             }
         }
 
         if (update.hasCallbackQuery()) {
             var callback = update.getCallbackQuery();
-            long chatId = callback.getMessage().getChatId();
-            String response = moodButtonService.getResponse(callback.getData());
-
-            SendMessage msg = new SendMessage();
-            msg.setChatId(String.valueOf(chatId));
-            msg.setText(response);
-            messageService.send(this, msg);
+            Optional<Content> callbackContent = handler.handleCallback(callback);
+            callbackContent.ifPresent(this::sent);
         }
     }
 
@@ -96,6 +77,17 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
 
                 execute(sendAudio);
 
+            } else if (content.getPhoto() != null) {
+                var sendPhoto = new SendPhoto();
+                sendPhoto.setChatId(String.valueOf(content.getChatId()));
+                sendPhoto.setPhoto(content.getPhoto());
+
+                if (content.getText() != null) {
+                    sendPhoto.setCaption(content.getText());
+                }
+
+                execute(sendPhoto);
+
             } else if (content.getText() != null && content.getMarkup() != null) {
                 var sendMessage = new SendMessage();
                 sendMessage.setChatId(String.valueOf(content.getChatId()));
@@ -110,17 +102,6 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
                 sendMessage.setText(content.getText());
 
                 execute(sendMessage);
-
-            } else if (content.getPhoto() != null) {
-                var sendPhoto = new SendPhoto();
-                sendPhoto.setChatId(String.valueOf(content.getChatId()));
-                sendPhoto.setPhoto(content.getPhoto());
-
-                if (content.getText() != null) {
-                    sendPhoto.setCaption(content.getText());
-                }
-
-                execute(sendPhoto);
             }
 
         } catch (Exception e) {

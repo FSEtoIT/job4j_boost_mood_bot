@@ -27,10 +27,9 @@ public class RecommendationEngine implements BeanNameAware {
 
         List<MoodContent> moodContents = moodContentRepository.findAllByMoodId(moodId);
 
-        if (!moodContents.isEmpty()) {
-            // выбираем случайный текст из доступных для данного настроения
+        if (moodContents != null && !moodContents.isEmpty()) {
             MoodContent chosen = moodContents.get(rnd.nextInt(moodContents.size()));
-            content.setText(chosen.getContent());
+            content.setText(chosen.getText()); // возвращаем текст совета
         } else {
             content.setText("Рекомендация для выбранного настроения не найдена.");
         }

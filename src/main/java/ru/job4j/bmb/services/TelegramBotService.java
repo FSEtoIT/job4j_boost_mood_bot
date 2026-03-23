@@ -59,10 +59,6 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
         return botToken;
     }
 
-    public void receive(Content content) {
-        handler.receive(content);
-    }
-
     @Override
     public void sent(Content content) {
         try {

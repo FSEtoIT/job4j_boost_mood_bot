@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class MoodService implements BeanNameAware {
@@ -29,9 +31,11 @@ public class MoodService implements BeanNameAware {
     private final AwardRepository awardRepository;
     private final ApplicationEventPublisher publisher;
     private final MoodRepository moodRepository;
+    private final MoodContentRepository moodContentRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
+    private final Random rnd = new Random();
 
     public MoodService(MoodLogRepository moodLogRepository,
                        RecommendationEngine recommendationEngine,
@@ -39,7 +43,8 @@ public class MoodService implements BeanNameAware {
                        AchievementRepository achievementRepository,
                        AwardRepository awardRepository,
                        ApplicationEventPublisher publisher,
-                       MoodRepository moodRepository) {
+                       MoodRepository moodRepository,
+                       MoodContentRepository moodContentRepository) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
@@ -47,6 +52,7 @@ public class MoodService implements BeanNameAware {
         this.awardRepository = awardRepository;
         this.publisher = publisher;
         this.moodRepository = moodRepository;
+        this.moodContentRepository = moodContentRepository;
     }
 
     public Content chooseMood(User user, Long moodId) {
@@ -153,26 +159,22 @@ public class MoodService implements BeanNameAware {
     }
 
     public Content dailyAdvice(User user) {
-        // Находим последний MoodLog пользователя
-        var lastMoodLogOpt = moodLogRepository.findTopByUserOrderByCreatedAtDesc(user);
+        Content content = new Content(user.getChatId());
 
-        Long moodId;
-        if (lastMoodLogOpt.isPresent()) {
-            // Берем moodId из последнего лога
-            moodId = lastMoodLogOpt.get().getMood().getId();
+        // преобразуем Iterable в List
+        List<MoodContent> allContents = StreamSupport.stream(
+                moodContentRepository.findAll().spliterator(), false
+        ).collect(Collectors.toList());
+
+        if (!allContents.isEmpty()) {
+            // Случайный совет каждый раз
+            MoodContent randomContent = allContents.get(rnd.nextInt(allContents.size()));
+            content.setText(randomContent.getText());
         } else {
-            // Если логов нет, берем случайное настроение из MoodRepository
-            List<Mood> allMoods = moodRepository.findAll();
-            if (allMoods.isEmpty()) {
-                Content content = new Content(user.getChatId());
-                content.setText("Нет доступных настроений для совета сегодня.");
-                return content;
-            }
-            moodId = allMoods.get(new Random().nextInt(allMoods.size())).getId();
+            content.setText("Нет доступных настроений для совета сегодня.");
         }
 
-        // Получаем текст рекомендации через RecommendationEngine
-        return recommendationEngine.recommendFor(user.getChatId(), moodId);
+        return content;
     }
 
     @Override

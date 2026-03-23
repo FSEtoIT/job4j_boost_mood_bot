@@ -3,6 +3,7 @@ package ru.job4j.bmb.services;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import ru.job4j.bmb.model.Mood;
 import ru.job4j.bmb.repository.MoodRepository;
 
 import java.util.ArrayList;
@@ -16,22 +17,23 @@ public class TgUI {
         this.moodRepository = moodRepository;
     }
 
+    /**
+     * Строит Inline-клавиатуру со всеми настроениями.
+     */
     public InlineKeyboardMarkup buildButtons() {
-        var inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        moodRepository.findAll().forEach(mood ->
-                keyboard.add(List.of(createBtn(mood.getText(), mood.getId())))
-        );
+        List<Mood> moods = moodRepository.findAll();
+        for (Mood mood : moods) {
+            InlineKeyboardButton button = new InlineKeyboardButton();
+            button.setText(mood.getText()); // имя + смайл
+            button.setCallbackData(String.valueOf(mood.getId()));
 
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-        return inlineKeyboardMarkup;
-    }
+            keyboard.add(List.of(button)); // каждая кнопка в отдельной строке
+        }
 
-    private InlineKeyboardButton createBtn(String name, Long moodId) {
-        var inline = new InlineKeyboardButton();
-        inline.setText(name);
-        inline.setCallbackData(String.valueOf(moodId));
-        return inline;
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        markup.setKeyboard(keyboard);
+        return markup;
     }
 }

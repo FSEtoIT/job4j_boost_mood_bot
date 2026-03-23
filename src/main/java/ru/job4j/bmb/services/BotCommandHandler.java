@@ -15,10 +15,10 @@ import java.util.Optional;
 @Service
 public class BotCommandHandler implements BeanNameAware {
 
-    private String beanName;
     private final UserRepository userRepository;
     private final MoodService moodService;
     private final TgUI tgUI;
+    private String beanName;
 
     public BotCommandHandler(UserRepository userRepository,
                              MoodService moodService,
@@ -28,7 +28,10 @@ public class BotCommandHandler implements BeanNameAware {
         this.tgUI = tgUI;
     }
 
-    Optional<Content> commands(Message message) {
+    /**
+     * Обработка текстовых команд бота.
+     */
+    public Optional<Content> commands(Message message) {
         if (message == null || message.getText() == null) {
             return Optional.empty();
         }
@@ -42,36 +45,48 @@ public class BotCommandHandler implements BeanNameAware {
             case "/week_mood_log" -> moodService.weekMoodLogCommand(chatId, clientId);
             case "/month_mood_log" -> moodService.monthMoodLogCommand(chatId, clientId);
             case "/award" -> moodService.awards(chatId, clientId);
-            case "/daily_advice" -> {
-                var userOpt = userRepository.findByClientId(clientId);
-                if (userOpt.isPresent()) {
-                    yield Optional.of(moodService.dailyAdvice(userOpt.get()));
-                } else {
-                    yield Optional.empty();
-                }
-            }
+            case "/daily_advice" -> userRepository.findByClientId(clientId)
+                    .map(moodService::dailyAdvice);
             default -> Optional.empty();
         };
     }
 
-    Optional<Content> handleCallback(CallbackQuery callback) {
-        var moodId = Long.valueOf(callback.getData());
-        var user = userRepository.findByClientId(callback.getFrom().getId());
-        return user.map(value -> moodService.chooseMood(value, moodId));
+    /**
+     * Обработка выбора настроения через callback.
+     */
+    public Optional<Content> handleCallback(CallbackQuery callback) {
+        Long moodId;
+        try {
+            moodId = Long.valueOf(callback.getData());
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+
+        return userRepository.findByClientId(callback.getFrom().getId())
+                .map(user -> moodService.chooseMood(user, moodId));
     }
 
+    /**
+     * /start команда — создает пользователя и показывает клавиатуру с настроениями.
+     */
     private Optional<Content> handleStartCommand(long chatId, Long clientId) {
-        var user = new User();
-        user.setClientId(clientId);
-        user.setChatId(chatId);
-        userRepository.save(user);
-        var content = new Content(user.getChatId());
-        content.setText("Как настроение? \n"
-                + "Используй команды \n"
-                + "/award - для вывода наград. \n"
-                + "/week_mood_log - список настроения за неделю. \n"
-                + "/month_mood_log - список настроения за месяц. \n"
-                + "/daily_advice - случайный совет дня.");
+        User user = userRepository.findByClientId(clientId)
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setClientId(clientId);
+                    newUser.setChatId(chatId);
+                    return userRepository.save(newUser);
+                });
+
+        Content content = new Content(user.getChatId());
+        content.setText("""
+                Как настроение? 
+                Используй команды:
+                /award - для вывода наград
+                /week_mood_log - список настроения за неделю
+                /month_mood_log - список настроения за месяц
+                /daily_advice - случайный совет дня
+                """);
         content.setMarkup(tgUI.buildButtons());
         return Optional.of(content);
     }
@@ -80,10 +95,6 @@ public class BotCommandHandler implements BeanNameAware {
     public void setBeanName(String name) {
         this.beanName = name;
         System.out.println("Имя бина в Spring-контексте: " + name);
-    }
-
-    void receive(Content content) {
-        System.out.println(content);
     }
 
     @PostConstruct

@@ -19,6 +19,7 @@ public class BotCommandHandler implements BeanNameAware {
     private final MoodService moodService;
     private final TgUI tgUI;
     private String beanName;
+    private final String defaultReminderTime = "09:00"; // дефолтное время для напоминаний
 
     public BotCommandHandler(UserRepository userRepository,
                              MoodService moodService,
@@ -35,39 +36,73 @@ public class BotCommandHandler implements BeanNameAware {
         if (message == null || message.getText() == null) {
             return Optional.empty();
         }
-
-        String text = message.getText();
-        long chatId = message.getChatId();
-        Long clientId = message.getFrom().getId();
-
-        return switch (text) {
-            case "/start" -> handleStartCommand(chatId, clientId);
-            case "/week_mood_log" -> moodService.weekMoodLogCommand(chatId, clientId);
-            case "/month_mood_log" -> moodService.monthMoodLogCommand(chatId, clientId);
-            case "/award" -> moodService.awards(chatId, clientId);
-            case "/daily_advice" -> userRepository.findByClientId(clientId)
-                    .map(moodService::dailyAdvice);
-            default -> Optional.empty();
-        };
+        return handleCommand(message.getText(), message.getChatId(), message.getFrom().getId());
     }
 
     /**
-     * Обработка выбора настроения через callback.
+     * Обработка callback-кнопок
      */
     public Optional<Content> handleCallback(CallbackQuery callback) {
-        Long moodId;
-        try {
-            moodId = Long.valueOf(callback.getData());
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
+        String data = callback.getData();
+        long chatId = callback.getMessage().getChatId();
+        Long clientId = callback.getFrom().getId();
 
-        return userRepository.findByClientId(callback.getFrom().getId())
-                .map(user -> moodService.chooseMood(user, moodId));
+        try {
+            // если это число — выбор настроения
+            Long moodId = Long.valueOf(data);
+            return userRepository.findByClientId(clientId)
+                    .map(user -> moodService.chooseMood(user, moodId));
+        } catch (NumberFormatException e) {
+            // иначе это команда
+            return handleCommand(data, chatId, clientId);
+        }
     }
 
     /**
-     * /start команда — создает пользователя и показывает клавиатуру с настроениями.
+     * Универсальная обработка команд (текст или callback)
+     */
+    private Optional<Content> handleCommand(String text, long chatId, Long clientId) {
+        if ("/start".equals(text)) {
+            return handleStartCommand(chatId, clientId);
+        } else if ("/week_mood_log".equals(text)) {
+            return moodService.weekMoodLogCommand(chatId, clientId);
+        } else if ("/month_mood_log".equals(text)) {
+            return moodService.monthMoodLogCommand(chatId, clientId);
+        } else if ("/award".equals(text)) {
+            return moodService.awards(chatId, clientId);
+        } else if ("/daily_advice".equals(text)) {
+            return userRepository.findByClientId(clientId)
+                    .map(moodService::dailyAdvice);
+        } else if (text.startsWith("/reminder_on")) {
+            Content content = new Content(chatId);
+            userRepository.findByClientId(clientId).ifPresent(user -> {
+                user.setDailyReminderEnabled(true);
+                // если время передано через текст команды, используем его
+                String[] parts = text.split(" ");
+                if (parts.length == 2) {
+                    user.setDailyReminderTime(parts[1]);
+                    content.setText("Напоминания включены на " + parts[1]);
+                } else {
+                    user.setDailyReminderTime(defaultReminderTime);
+                    content.setText("Напоминания включены на " + defaultReminderTime);
+                }
+                userRepository.save(user);
+            });
+            return Optional.of(content);
+        } else if ("/reminder_off".equals(text)) {
+            Content content = new Content(chatId);
+            userRepository.findByClientId(clientId).ifPresent(user -> {
+                user.setDailyReminderEnabled(false);
+                userRepository.save(user);
+            });
+            content.setText("Напоминания отключены.");
+            return Optional.of(content);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * /start команда — создает пользователя и показывает клавиатуру
      */
     private Optional<Content> handleStartCommand(long chatId, Long clientId) {
         User user = userRepository.findByClientId(clientId)
@@ -79,14 +114,13 @@ public class BotCommandHandler implements BeanNameAware {
                 });
 
         Content content = new Content(user.getChatId());
-        content.setText("""
-                Как настроение? 
-                Используй команды:
-                /award - для вывода наград
-                /week_mood_log - список настроения за неделю
-                /month_mood_log - список настроения за месяц
-                /daily_advice - случайный совет дня
-                """);
+        content.setText("Как настроение? Используй кнопки ниже или команды:\n"
+                + "/award - награды\n"
+                + "/week_mood_log - отчет за неделю\n"
+                + "/month_mood_log - отчет за месяц\n"
+                + "/daily_advice - совет дня\n"
+                + "/reminder_on HH:mm - включить напоминания\n"
+                + "/reminder_off - выключить напоминания\n");
         content.setMarkup(tgUI.buildButtons());
         return Optional.of(content);
     }

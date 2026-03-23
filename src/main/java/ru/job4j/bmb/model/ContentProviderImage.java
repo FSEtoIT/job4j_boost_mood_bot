@@ -1,4 +1,4 @@
-package ru.job4j.bmb.model;
+/*package ru.job4j.bmb.model;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -18,3 +18,6 @@ public class ContentProviderImage implements ContentProvider {
         return content;
     }
 }
+
+
+ */

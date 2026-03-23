@@ -7,6 +7,7 @@ import ru.job4j.bmb.model.SentContent;
 import ru.job4j.bmb.repository.MoodLogRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Service
@@ -24,9 +25,8 @@ public class RemindService {
 
     @Scheduled(fixedRateString = "${recommendation.alert.period}")
     public void remindUsers() {
-        // Границы текущего дня
-        var startOfDay = LocalDate.now().atStartOfDay(); // LocalDateTime
-        var endOfDay = LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1); // LocalDateTime до конца дня
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1);
 
         for (var user : moodLogRepository.findUsersWhoDidNotVoteToday(startOfDay, endOfDay)) {
             var content = new Content(user.getChatId());

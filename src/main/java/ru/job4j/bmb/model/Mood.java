@@ -1,7 +1,6 @@
 package ru.job4j.bmb.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity

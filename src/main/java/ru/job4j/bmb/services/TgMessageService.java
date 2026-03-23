@@ -1,4 +1,4 @@
-package ru.job4j.bmb.services;
+/*package ru.job4j.bmb.services;
 
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -16,3 +16,5 @@ public class TgMessageService {
         }
     }
 }
+
+ */

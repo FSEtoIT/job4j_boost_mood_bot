@@ -1,4 +1,4 @@
-package ru.job4j.bmb.model;
+/*package ru.job4j.bmb.model;
 
 import org.springframework.stereotype.Component;
 
@@ -14,3 +14,5 @@ public class ContentProviderText implements ContentProvider {
         return content;
     }
 }
+
+ */

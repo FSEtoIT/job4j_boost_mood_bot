@@ -16,6 +16,12 @@ public class User {
     @Column(name = "chat_id")
     private long chatId;
 
+    @Column(name = "daily_reminder_enabled")
+    private boolean dailyReminderEnabled = false; // по умолчанию выключено
+
+    @Column(name = "daily_reminder_time")
+    private String dailyReminderTime; // хранится время в формате "HH:mm"
+
     public User() {
     }
 
@@ -47,6 +53,22 @@ public class User {
 
     public void setChatId(long chatId) {
         this.chatId = chatId;
+    }
+
+    public boolean isDailyReminderEnabled() {
+        return dailyReminderEnabled;
+    }
+
+    public void setDailyReminderEnabled(boolean dailyReminderEnabled) {
+        this.dailyReminderEnabled = dailyReminderEnabled;
+    }
+
+    public String getDailyReminderTime() {
+        return dailyReminderTime;
+    }
+
+    public void setDailyReminderTime(String dailyReminderTime) {
+        this.dailyReminderTime = dailyReminderTime;
     }
 
     @Override

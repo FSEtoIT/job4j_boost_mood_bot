@@ -23,17 +23,38 @@ public class TgUI {
     public InlineKeyboardMarkup buildButtons() {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
+        // Кнопки настроений (каждая в отдельной строке)
         List<Mood> moods = moodRepository.findAll();
         for (Mood mood : moods) {
             InlineKeyboardButton button = new InlineKeyboardButton();
-            button.setText(mood.getText()); // имя + смайл
-            button.setCallbackData(String.valueOf(mood.getId()));
-
-            keyboard.add(List.of(button)); // каждая кнопка в отдельной строке
+            button.setText(mood.getText());
+            button.setCallbackData(String.valueOf(mood.getId())); // id настроения
+            keyboard.add(List.of(button));
         }
+
+        // Кнопки команд бота — каждая в отдельной строке
+        keyboard.add(List.of(createCommandButton("Совет дня", "/daily_advice")));
+        keyboard.add(List.of(createCommandButton("Мои награды", "/award")));
+        keyboard.add(List.of(createCommandButton("Отчет за неделю", "/week_mood_log")));
+        keyboard.add(List.of(createCommandButton("Отчет за месяц", "/month_mood_log")));
+
+        // Кнопки включения/выключения напоминаний — в одной строке
+        InlineKeyboardButton reminderOnBtn = createCommandButton("Вкл.", "/reminder_on");
+        InlineKeyboardButton reminderOffBtn = createCommandButton("Выкл.", "/reminder_off");
+        keyboard.add(List.of(reminderOnBtn, reminderOffBtn));
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         markup.setKeyboard(keyboard);
         return markup;
+    }
+
+    /**
+     * Вспомогательный метод для создания кнопок команд
+     */
+    private InlineKeyboardButton createCommandButton(String text, String command) {
+        InlineKeyboardButton button = new InlineKeyboardButton();
+        button.setText(text);
+        button.setCallbackData(command); // команды будем обрабатывать через callback
+        return button;
     }
 }

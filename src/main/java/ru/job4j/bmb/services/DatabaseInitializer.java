@@ -1,4 +1,4 @@
-package ru.job4j.bmb.services;
+/*package ru.job4j.bmb.services;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -51,3 +51,5 @@ public class DatabaseInitializer implements CommandLineRunner {
         System.out.println("База настроений и рекомендаций успешно инициализирована!");
     }
 }
+
+ */

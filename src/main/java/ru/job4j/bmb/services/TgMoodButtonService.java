@@ -1,4 +1,4 @@
-package ru.job4j.bmb.services;
+/*package ru.job4j.bmb.services;
 
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -58,3 +58,5 @@ public class TgMoodButtonService {
         return MOOD_RESP.getOrDefault(callbackData, "Неизвестная кнопка");
     }
 }
+
+ */

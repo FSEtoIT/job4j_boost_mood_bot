@@ -4,11 +4,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.job4j.bmb.model.Content;
 import ru.job4j.bmb.model.SentContent;
+import ru.job4j.bmb.model.User;
 import ru.job4j.bmb.repository.MoodLogRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.List;
 
 @Service
 public class RemindService {
@@ -23,16 +26,28 @@ public class RemindService {
         this.tgUI = tgUI;
     }
 
-    @Scheduled(fixedRateString = "${recommendation.alert.period}")
+    @Scheduled(fixedRateString = "60000") // проверяем каждую минуту
     public void remindUsers() {
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        LocalDateTime endOfDay = LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1);
+        LocalDate today = LocalDate.now();
+        long startOfDay = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endOfDay = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
-        for (var user : moodLogRepository.findUsersWhoDidNotVoteToday(startOfDay, endOfDay)) {
-            var content = new Content(user.getChatId());
-            content.setText("Как настроение?");
-            content.setMarkup(tgUI.buildButtons());
-            sentContent.sent(content);
+        List<User> users = moodLogRepository.findUsersWhoDidNotVoteToday(startOfDay, endOfDay);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (User user : users) {
+            if (user.isDailyReminderEnabled() && user.getDailyReminderTime() != null) {
+                LocalTime reminderTime = LocalTime.parse(user.getDailyReminderTime());
+                LocalDateTime reminderDateTime = now.toLocalDate().atTime(reminderTime);
+
+                // если сейчас в пределах одной минуты после времени напоминания
+                if (!now.isBefore(reminderDateTime) && now.isBefore(reminderDateTime.plusMinutes(1))) {
+                    Content content = new Content(user.getChatId());
+                    content.setText("А мы напоминаем Вам, пора отметить настроение!");
+                    sentContent.sent(content);
+                }
+            }
         }
     }
 }

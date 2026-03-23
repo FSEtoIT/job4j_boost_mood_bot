@@ -39,8 +39,8 @@ public class TgUI {
         keyboard.add(List.of(createCommandButton("Отчет за месяц", "/month_mood_log")));
 
         // Кнопки включения/выключения напоминаний — в одной строке
-        InlineKeyboardButton reminderOnBtn = createCommandButton("Вкл.", "/reminder_on");
-        InlineKeyboardButton reminderOffBtn = createCommandButton("Выкл.", "/reminder_off");
+        InlineKeyboardButton reminderOnBtn = createCommandButton("Вкл.напом.", "/reminder_on");
+        InlineKeyboardButton reminderOffBtn = createCommandButton("Выкл.напом.", "/reminder_off");
         keyboard.add(List.of(reminderOnBtn, reminderOffBtn));
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -54,7 +54,7 @@ public class TgUI {
     private InlineKeyboardButton createCommandButton(String text, String command) {
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText(text);
-        button.setCallbackData(command); // команды будем обрабатывать через callback
+        button.setCallbackData(command);
         return button;
     }
 }

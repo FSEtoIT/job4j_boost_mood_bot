@@ -18,7 +18,6 @@ public class Mood {
     @JoinColumn(name = "user_id", nullable = true) // nullable = true
     private User user;
 
-    // 🔹 добавляем дату создания для фильтрации по дню
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Mood() {

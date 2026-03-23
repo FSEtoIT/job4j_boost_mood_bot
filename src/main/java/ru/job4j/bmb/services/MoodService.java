@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -122,7 +121,7 @@ public class MoodService implements BeanNameAware {
         if (userOpt.isEmpty()) {
             return Optional.empty();
         }
-        var user = userOpt.get(); // получаем объект User
+        var user = userOpt.get();
 
         var logs = moodLogRepository.findByUserOrderByCreatedAtDesc(user);
 
@@ -191,23 +190,5 @@ public class MoodService implements BeanNameAware {
     @PreDestroy
     public void destroy() {
         System.out.println("MoodService уничтожается");
-    }
-
-    public Content weekMoodLog(User user) {
-        var content = new Content(user.getChatId());
-        content.setText("Лог настроений за неделю (заглушка)");
-        return content;
-    }
-
-    public Content monthMoodLog(User user) {
-        var content = new Content(user.getChatId());
-        content.setText("Лог настроений за месяц (заглушка)");
-        return content;
-    }
-
-    public Content getAwards(User user) {
-        var content = new Content(user.getChatId());
-        content.setText("Список наград пользователя (заглушка)");
-        return content;
     }
 }

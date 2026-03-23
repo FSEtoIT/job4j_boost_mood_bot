@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface AchievementRepository extends CrudRepository<Achievement, Long> {
     List<Achievement> findAll();
-
-    List<Achievement> findByUser(User user);
 }

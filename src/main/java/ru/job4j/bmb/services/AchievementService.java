@@ -14,7 +14,6 @@ import ru.job4j.bmb.repository.AwardRepository;
 import ru.job4j.bmb.repository.MoodLogRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AchievementService implements ApplicationListener<UserEvent> {
@@ -46,7 +45,6 @@ public class AchievementService implements ApplicationListener<UserEvent> {
     public void onApplicationEvent(UserEvent event) {
         var user = event.getUser(); // User, не Optional<User>
 
-        // Получаем логи пользователя
         List<MoodLog> logs = moodLogRepository.findByUserOrderByCreatedAtDesc(user);
 
         int goodDays = 0;

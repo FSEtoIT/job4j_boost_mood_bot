@@ -29,9 +29,6 @@ public class BotCommandHandler implements BeanNameAware {
         this.tgUI = tgUI;
     }
 
-    /**
-     * Обработка текстовых команд бота.
-     */
     public Optional<Content> commands(Message message) {
         if (message == null || message.getText() == null) {
             return Optional.empty();
@@ -39,28 +36,20 @@ public class BotCommandHandler implements BeanNameAware {
         return handleCommand(message.getText(), message.getChatId(), message.getFrom().getId());
     }
 
-    /**
-     * Обработка callback-кнопок
-     */
     public Optional<Content> handleCallback(CallbackQuery callback) {
         String data = callback.getData();
         long chatId = callback.getMessage().getChatId();
         Long clientId = callback.getFrom().getId();
 
         try {
-            // если это число — выбор настроения
             Long moodId = Long.valueOf(data);
             return userRepository.findByClientId(clientId)
                     .map(user -> moodService.chooseMood(user, moodId));
         } catch (NumberFormatException e) {
-            // иначе это команда
             return handleCommand(data, chatId, clientId);
         }
     }
 
-    /**
-     * Универсальная обработка команд (текст или callback)
-     */
     private Optional<Content> handleCommand(String text, long chatId, Long clientId) {
         if ("/start".equals(text)) {
             return handleStartCommand(chatId, clientId);
@@ -77,7 +66,6 @@ public class BotCommandHandler implements BeanNameAware {
             Content content = new Content(chatId);
             userRepository.findByClientId(clientId).ifPresent(user -> {
                 user.setDailyReminderEnabled(true);
-                // если время передано через текст команды, используем его
                 String[] parts = text.split(" ");
                 if (parts.length == 2) {
                     user.setDailyReminderTime(parts[1]);
@@ -101,9 +89,6 @@ public class BotCommandHandler implements BeanNameAware {
         return Optional.empty();
     }
 
-    /**
-     * /start команда — создает пользователя и показывает клавиатуру
-     */
     private Optional<Content> handleStartCommand(long chatId, Long clientId) {
         User user = userRepository.findByClientId(clientId)
                 .orElseGet(() -> {

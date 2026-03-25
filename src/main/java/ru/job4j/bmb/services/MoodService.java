@@ -5,8 +5,16 @@ import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import ru.job4j.bmb.model.*;
-import ru.job4j.bmb.repository.*;
+import ru.job4j.bmb.model.Mood;
+import ru.job4j.bmb.model.Content;
+import ru.job4j.bmb.model.MoodContent;
+import ru.job4j.bmb.model.MoodLog;
+import ru.job4j.bmb.model.User;
+import ru.job4j.bmb.model.UserEvent;
+import ru.job4j.bmb.repository.AwardRepository;
+import ru.job4j.bmb.repository.MoodContentRepository;
+import ru.job4j.bmb.repository.MoodLogRepository;
+import ru.job4j.bmb.repository.UserRepository;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -19,50 +27,52 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
- * Сервис для работы с настроениями пользователей, их журналами и рекомендациями.
- * Реализует BeanNameAware для получения имени бина в Spring-контексте.
+ * Сервис для работы с настроениями пользователей,
+ * их журналами и рекомендациями.
+ * Реализует BeanNameAware для получения имени бина
+ * в Spring-контексте.
  */
 @Service
 public class MoodService implements BeanNameAware {
 
-    /** Имя бина в Spring-контексте */
+    /** Имя бина в Spring-контексте. */
     private String beanName;
 
-    /** Репозиторий для работы с журналом настроений */
+    /** Репозиторий для работы с журналом настроений. */
     private final MoodLogRepository moodLogRepository;
 
-    /** Движок рекомендаций контента по настроению */
+    /** Движок рекомендаций контента по настроению. */
     private final RecommendationEngine recommendationEngine;
 
-    /** Репозиторий пользователей */
+    /** Репозиторий пользователей. */
     private final UserRepository userRepository;
 
-    /** Репозиторий наград */
+    /** Репозиторий наград. */
     private final AwardRepository awardRepository;
 
-    /** Публикатор событий Spring */
+    /** Публикатор событий Spring. */
     private final ApplicationEventPublisher publisher;
 
-    /** Репозиторий для контента настроений */
+    /** Репозиторий для контента настроений. */
     private final MoodContentRepository moodContentRepository;
 
-    /** Форматтер для отображения даты и времени */
+    /** Форматтер для отображения даты и времени. */
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
 
-    /** Генератор случайных чисел для выбора советов */
+    /** Генератор случайных чисел для выбора советов. */
     private final Random rnd = new Random();
 
     /**
      * Конструктор MoodService.
      *
-     * @param moodLogRepository репозиторий журнала настроений
-     * @param recommendationEngine движок рекомендаций
-     * @param userRepository репозиторий пользователей
-     * @param awardRepository репозиторий наград
-     * @param publisher публикатор событий
-     * @param moodContentRepository репозиторий контента настроений
+     * @param moodLogRepository репозиторий журнала настроений.
+     * @param recommendationEngine движок рекомендаций.
+     * @param userRepository репозиторий пользователей.
+     * @param awardRepository репозиторий наград.
+     * @param publisher публикатор событий.
+     * @param moodContentRepository репозиторий контента настроений.
      */
     public MoodService(MoodLogRepository moodLogRepository,
                        RecommendationEngine recommendationEngine,
@@ -79,11 +89,12 @@ public class MoodService implements BeanNameAware {
     }
 
     /**
-     * Записывает выбранное пользователем настроение и возвращает рекомендацию контента.
+     * Записывает выбранное пользователем настроение
+     * и возвращает рекомендацию контента.
      *
-     * @param user пользователь
-     * @param moodId идентификатор настроения
-     * @return контент с рекомендацией
+     * @param user пользователь.
+     * @param moodId идентификатор настроения.
+     * @return контент с рекомендацией.
      */
     public Content chooseMood(User user, Long moodId) {
         var moodLog = new MoodLog();
@@ -99,9 +110,10 @@ public class MoodService implements BeanNameAware {
     /**
      * Формирует отчет о настроении пользователя за последнюю неделю.
      *
-     * @param chatId идентификатор чата
-     * @param clientId идентификатор клиента
-     * @return контент с отчетом или Optional.empty(), если пользователь не найден
+     * @param chatId идентификатор чата.
+     * @param clientId идентификатор клиента.
+     * @return контент с отчетом или Optional.empty(),
+     * если пользователь не найден.
      */
     public Optional<Content> weekMoodLogCommand(long chatId, Long clientId) {
         var userOpt = userRepository.findByClientId(clientId);
@@ -121,9 +133,10 @@ public class MoodService implements BeanNameAware {
     /**
      * Формирует отчет о настроении пользователя за последний месяц.
      *
-     * @param chatId идентификатор чата
-     * @param clientId идентификатор клиента
-     * @return контент с отчетом или Optional.empty(), если пользователь не найден
+     * @param chatId идентификатор чата.
+     * @param clientId идентификатор клиента.
+     * @return контент с отчетом или Optional.empty(),
+     * если пользователь не найден.
      */
     public Optional<Content> monthMoodLogCommand(long chatId, Long clientId) {
         var userOpt = userRepository.findByClientId(clientId);
@@ -143,9 +156,9 @@ public class MoodService implements BeanNameAware {
     /**
      * Форматирует список MoodLog в текст для отправки пользователю.
      *
-     * @param logs список записей настроений
-     * @param title заголовок отчета
-     * @return форматированный текст
+     * @param logs список записей настроений.
+     * @param title заголовок отчета.
+     * @return форматированный текст.
      */
     private String formatMoodLogs(List<MoodLog> logs, String title) {
         if (logs.isEmpty()) {
@@ -166,9 +179,10 @@ public class MoodService implements BeanNameAware {
     /**
      * Возвращает список достижений пользователя в виде текста.
      *
-     * @param chatId идентификатор чата
-     * @param clientId идентификатор клиента
-     * @return контент с достижениями или Optional.empty(), если пользователь не найден
+     * @param chatId идентификатор чата.
+     * @param clientId идентификатор клиента.
+     * @return контент с достижениями или Optional.empty(),
+     * если пользователь не найден.
      */
     public Optional<Content> awards(long chatId, Long clientId) {
         var userOpt = userRepository.findByClientId(clientId);
@@ -210,8 +224,8 @@ public class MoodService implements BeanNameAware {
     /**
      * Возвращает случайный совет пользователю на день.
      *
-     * @param user пользователь
-     * @return контент с советом
+     * @param user пользователь.
+     * @return контент с советом.
      */
     public Content dailyAdvice(User user) {
         Content content = new Content(user.getChatId());
@@ -233,7 +247,7 @@ public class MoodService implements BeanNameAware {
     /**
      * Устанавливает имя бина Spring.
      *
-     * @param name имя бина
+     * @param name имя бина.
      */
     @Override
     public void setBeanName(String name) {
@@ -241,13 +255,13 @@ public class MoodService implements BeanNameAware {
         System.out.println("Имя бина в Spring-контексте: " + name);
     }
 
-    /** Метод вызывается после инициализации бина */
+    /** Метод вызывается после инициализации бина. */
     @PostConstruct
     public void init() {
         System.out.println("MoodService инициализирован");
     }
 
-    /** Метод вызывается перед уничтожением бина */
+    /** Метод вызывается перед уничтожением бина. */
     @PreDestroy
     public void destroy() {
         System.out.println("MoodService уничтожается");

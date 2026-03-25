@@ -1,4 +1,5 @@
-/*package ru.job4j.bmb.services;
+/*No Need this moment
+package ru.job4j.bmb.services;
 
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;

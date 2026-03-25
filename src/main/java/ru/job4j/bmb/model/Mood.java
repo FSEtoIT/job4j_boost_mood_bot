@@ -80,8 +80,12 @@ public class Mood {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Mood mood)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Mood mood)) {
+            return false;
+        }
         return id != null && id.equals(mood.id);
     }
 

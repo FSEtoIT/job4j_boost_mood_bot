@@ -26,7 +26,6 @@ public class MoodService implements BeanNameAware {
     private final MoodLogRepository moodLogRepository;
     private final RecommendationEngine recommendationEngine;
     private final UserRepository userRepository;
-    private final AchievementRepository achievementRepository;
     private final AwardRepository awardRepository;
     private final ApplicationEventPublisher publisher;
     private final MoodRepository moodRepository;
@@ -39,7 +38,6 @@ public class MoodService implements BeanNameAware {
     public MoodService(MoodLogRepository moodLogRepository,
                        RecommendationEngine recommendationEngine,
                        UserRepository userRepository,
-                       AchievementRepository achievementRepository,
                        AwardRepository awardRepository,
                        ApplicationEventPublisher publisher,
                        MoodRepository moodRepository,
@@ -47,7 +45,6 @@ public class MoodService implements BeanNameAware {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
-        this.achievementRepository = achievementRepository;
         this.awardRepository = awardRepository;
         this.publisher = publisher;
         this.moodRepository = moodRepository;

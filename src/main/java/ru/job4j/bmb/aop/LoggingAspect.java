@@ -18,8 +18,8 @@ public class LoggingAspect {
         String methodName = joinPoint.getSignature().getName();
 
         System.out.println(
-                "Вызов: " + className + "." + methodName +
-                        " args=" + Arrays.toString(joinPoint.getArgs())
+                "Вызов: " + className + "." + methodName
+                        + " args=" + Arrays.toString(joinPoint.getArgs())
         );
     }
 }

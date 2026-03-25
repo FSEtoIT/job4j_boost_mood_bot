@@ -267,3 +267,4 @@ public class MoodService implements BeanNameAware {
         System.out.println("MoodService уничтожается");
     }
 }
+

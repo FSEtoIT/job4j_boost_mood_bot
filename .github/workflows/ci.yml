@@ -20,5 +20,17 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build project
-        run: mvn clean install
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+
+      - name: Compile
+        run: mvn clean compile
+
+      - name: Run tests
+        run: mvn test
+
+      - name: Checkstyle
+        run: mvn checkstyle:check

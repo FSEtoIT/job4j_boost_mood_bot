@@ -9,38 +9,69 @@ import ru.job4j.bmb.repository.MoodRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * UI-компонент Telegram-бота.
+ *
+ * <p>Отвечает за построение Inline-клавиатуры,
+ * которая используется для взаимодействия пользователя
+ * с ботом (выбор настроения, команды, напоминания).</p>
+ */
 @Component
 public class TgUI {
+
+    /**
+     * Репозиторий настроений пользователей.
+     */
     private final MoodRepository moodRepository;
 
-    public TgUI(MoodRepository moodRepository) {
+    /**
+     * Конструктор TgUI.
+     *
+     * @param moodRepository репозиторий настроений
+     */
+    public TgUI(final MoodRepository moodRepository) {
         this.moodRepository = moodRepository;
     }
 
     /**
-     * Строит Inline-клавиатуру со всеми настроениями.
+     * Формирует Inline-клавиатуру для Telegram-бота.
+     *
+     * <p>Содержит:
+     * <ul>
+     *     <li>кнопки настроений пользователя</li>
+     *     <li>кнопки команд (отчёты, награды, советы)</li>
+     *     <li>кнопки управления напоминаниями</li>
+     * </ul>
+     * </p>
+     *
+     * @return InlineKeyboardMarkup с кнопками управления ботом
      */
     public InlineKeyboardMarkup buildButtons() {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        // Кнопки настроений (каждая в отдельной строке)
         List<Mood> moods = moodRepository.findAll();
         for (Mood mood : moods) {
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setText(mood.getText());
-            button.setCallbackData(String.valueOf(mood.getId())); // id настроения
+            button.setCallbackData(String.valueOf(mood.getId()));
             keyboard.add(List.of(button));
         }
 
-        // Кнопки команд бота — каждая в отдельной строке
-        keyboard.add(List.of(createCommandButton("Совет дня", "/daily_advice")));
-        keyboard.add(List.of(createCommandButton("Мои награды", "/award")));
-        keyboard.add(List.of(createCommandButton("Отчет за неделю", "/week_mood_log")));
-        keyboard.add(List.of(createCommandButton("Отчет за месяц", "/month_mood_log")));
+        keyboard.add(List.of(createCommandButton(
+                "Совет дня", "/daily_advice")));
+        keyboard.add(List.of(createCommandButton(
+                "Мои награды", "/award")));
+        keyboard.add(List.of(createCommandButton(
+                "Отчет за неделю", "/week_mood_log")));
+        keyboard.add(List.of(createCommandButton(
+                "Отчет за месяц", "/month_mood_log")));
 
-        // Кнопки включения/выключения напоминаний — в одной строке
-        InlineKeyboardButton reminderOnBtn = createCommandButton("Вкл.напом.", "/reminder_on");
-        InlineKeyboardButton reminderOffBtn = createCommandButton("Выкл.напом.", "/reminder_off");
+        InlineKeyboardButton reminderOnBtn =
+                createCommandButton("Вкл.напом.", "/reminder_on");
+
+        InlineKeyboardButton reminderOffBtn =
+                createCommandButton("Выкл.напом.", "/reminder_off");
+
         keyboard.add(List.of(reminderOnBtn, reminderOffBtn));
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -49,9 +80,14 @@ public class TgUI {
     }
 
     /**
-     * Вспомогательный метод для создания кнопок команд
+     * Создаёт кнопку Telegram-команды.
+     *
+     * @param text отображаемый текст кнопки
+     * @param command callback-значение команды
+     * @return кнопка InlineKeyboardButton
      */
-    private InlineKeyboardButton createCommandButton(String text, String command) {
+    private InlineKeyboardButton createCommandButton(final String text,
+                                                     final String command) {
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText(text);
         button.setCallbackData(command);

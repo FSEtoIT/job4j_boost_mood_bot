@@ -35,6 +35,13 @@ import java.util.stream.StreamSupport;
 @Service
 public class MoodService implements BeanNameAware {
 
+    /** Количество дней в неделе. */
+    private static final int WEEK_DAYS = 7;
+
+    /** Количество дней в месяце. */
+
+    private static final int MONTH_DAYS = 30;
+
     /** Имя бина в Spring-контексте. */
     private String beanName;
 
@@ -74,12 +81,12 @@ public class MoodService implements BeanNameAware {
      * @param publisher публикатор событий.
      * @param moodContentRepository репозиторий контента настроений.
      */
-    public MoodService(MoodLogRepository moodLogRepository,
-                       RecommendationEngine recommendationEngine,
-                       UserRepository userRepository,
-                       AwardRepository awardRepository,
-                       ApplicationEventPublisher publisher,
-                       MoodContentRepository moodContentRepository) {
+    public MoodService(final MoodLogRepository moodLogRepository,
+                       final RecommendationEngine recommendationEngine,
+                       final UserRepository userRepository,
+                       final AwardRepository awardRepository,
+                       final ApplicationEventPublisher publisher,
+                       final MoodContentRepository moodContentRepository) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
@@ -96,7 +103,8 @@ public class MoodService implements BeanNameAware {
      * @param moodId идентификатор настроения.
      * @return контент с рекомендацией.
      */
-    public Content chooseMood(User user, Long moodId) {
+    public Content chooseMood(final User user,
+                              final Long moodId) {
         var moodLog = new MoodLog();
         moodLog.setUser(user);
         moodLog.setMood(new Mood(moodId));
@@ -115,14 +123,17 @@ public class MoodService implements BeanNameAware {
      * @return контент с отчетом или Optional.empty(),
      * если пользователь не найден.
      */
-    public Optional<Content> weekMoodLogCommand(long chatId, Long clientId) {
+    public Optional<Content> weekMoodLogCommand(final long chatId,
+                                                final Long clientId) {
         var userOpt = userRepository.findByClientId(clientId);
         if (userOpt.isEmpty()) {
             return Optional.empty();
         }
 
         var user = userOpt.get();
-        var weekAgo = Instant.now().minus(7, ChronoUnit.DAYS).getEpochSecond();
+        var weekAgo = Instant.now()
+                .minus(WEEK_DAYS, ChronoUnit.DAYS)
+                .getEpochSecond();
         var logs = moodLogRepository.findByUserAndCreatedAtAfter(user, weekAgo);
 
         var content = new Content(chatId);
@@ -138,15 +149,19 @@ public class MoodService implements BeanNameAware {
      * @return контент с отчетом или Optional.empty(),
      * если пользователь не найден.
      */
-    public Optional<Content> monthMoodLogCommand(long chatId, Long clientId) {
+    public Optional<Content> monthMoodLogCommand(final long chatId,
+                                                 final Long clientId) {
         var userOpt = userRepository.findByClientId(clientId);
         if (userOpt.isEmpty()) {
             return Optional.empty();
         }
 
         var user = userOpt.get();
-        var monthAgo = Instant.now().minus(30, ChronoUnit.DAYS).getEpochSecond();
-        var logs = moodLogRepository.findByUserAndCreatedAtAfter(user, monthAgo);
+        var monthAgo = Instant.now()
+                .minus(MONTH_DAYS, ChronoUnit.DAYS)
+                .getEpochSecond();
+        var logs = moodLogRepository
+                .findByUserAndCreatedAtAfter(user, monthAgo);
 
         var content = new Content(chatId);
         content.setText(formatMoodLogs(logs, "Ваше настроение за месяц:"));
@@ -160,14 +175,16 @@ public class MoodService implements BeanNameAware {
      * @param title заголовок отчета.
      * @return форматированный текст.
      */
-    private String formatMoodLogs(List<MoodLog> logs, String title) {
+    private String formatMoodLogs(final List<MoodLog> logs,
+                                  final String title) {
         if (logs.isEmpty()) {
             return title + "\nЗаписей о настроении не найдено.";
         }
 
         var sb = new StringBuilder(title + ":\n");
         logs.forEach(log -> {
-            var formattedDate = formatter.format(Instant.ofEpochSecond(log.getCreatedAt()));
+            var formattedDate = formatter
+                    .format(Instant.ofEpochSecond(log.getCreatedAt()));
             sb.append(formattedDate)
                     .append(": ")
                     .append(log.getMood().getText())
@@ -184,7 +201,8 @@ public class MoodService implements BeanNameAware {
      * @return контент с достижениями или Optional.empty(),
      * если пользователь не найден.
      */
-    public Optional<Content> awards(long chatId, Long clientId) {
+    public Optional<Content> awards(final long chatId,
+                                    final Long clientId) {
         var userOpt = userRepository.findByClientId(clientId);
         if (userOpt.isEmpty()) {
             return Optional.empty();
@@ -214,7 +232,11 @@ public class MoodService implements BeanNameAware {
         } else {
             var sb = new StringBuilder("Ваши награды:\n");
             achievedAwards.forEach(a ->
-                    sb.append("- ").append(a.getTitle()).append(" (").append(a.getDays()).append(" дней)\n")
+                    sb.append("- ")
+                            .append(a.getTitle())
+                            .append(" (")
+                            .append(a.getDays())
+                            .append(" дней)\n")
             );
             content.setText(sb.toString());
         }
@@ -227,7 +249,7 @@ public class MoodService implements BeanNameAware {
      * @param user пользователь.
      * @return контент с советом.
      */
-    public Content dailyAdvice(User user) {
+    public Content dailyAdvice(final User user) {
         Content content = new Content(user.getChatId());
 
         List<MoodContent> allContents = StreamSupport.stream(
@@ -235,7 +257,8 @@ public class MoodService implements BeanNameAware {
         ).collect(Collectors.toList());
 
         if (!allContents.isEmpty()) {
-            MoodContent randomContent = allContents.get(rnd.nextInt(allContents.size()));
+            MoodContent randomContent = allContents
+                    .get(rnd.nextInt(allContents.size()));
             content.setText(randomContent.getText());
         } else {
             content.setText("Нет доступных настроений для совета сегодня.");
@@ -250,7 +273,7 @@ public class MoodService implements BeanNameAware {
      * @param name имя бина.
      */
     @Override
-    public void setBeanName(String name) {
+    public void setBeanName(final String name) {
         this.beanName = name;
         System.out.println("Имя бина в Spring-контексте: " + name);
     }
@@ -267,4 +290,3 @@ public class MoodService implements BeanNameAware {
         System.out.println("MoodService уничтожается");
     }
 }
-

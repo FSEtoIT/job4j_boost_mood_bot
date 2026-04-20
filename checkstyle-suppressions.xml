@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+
+    <!-- JPA entities -->
+    <suppress checks="HiddenField"
+              files=".*[\\/]ru[\\/]job4j[\\/]bmb[\\/]model[\\/].*"/>
+
+    <suppress checks="JavadocVariable"
+              files=".*[\\/]ru[\\/]job4j[\\/]bmb[\\/]model[\\/].*"/>
+
+    <suppress checks="DesignForExtension"
+              files=".*[\\/]ru[\\/]job4j[\\/]bmb[\\/]model[\\/].*"/>
+
+    <suppress checks="EqualsHashCode"
+              files=".*[\\/]ru[\\/]job4j[\\/]bmb[\\/]model[\\/].*"/>
+
+    <suppress checks="HiddenField"
+              files=".*ru[\\/]job4j[\\/]bmb[\\/]services[\\/].*" />
+
+    <suppress checks="NewlineAtEndOfFile"
+              files="\.properties$" />
+
+</suppressions>

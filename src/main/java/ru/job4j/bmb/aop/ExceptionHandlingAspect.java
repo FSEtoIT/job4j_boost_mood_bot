@@ -7,24 +7,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * Аспект для логирования исключений в сервисном слое.
+ */
 @Aspect
 @Component
-public class ExceptionHandlingAspect {
+public final class ExceptionHandlingAspect {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionHandlingAspect.class);
+    /**
+     * Логгер для обработки исключений.
+     */
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ExceptionHandlingAspect.class);
 
-    // Аспект срабатывает после выбрасывания исключения в методах пакета service
+    /**
+     * Обрабатывает исключения, выброшенные в сервисном слое.
+     *
+     * @param joinPoint информация о месте вызова метода
+     * @param ex        выброшенное исключение
+     */
     @AfterThrowing(
             pointcut = "execution(* ru.job4j.bmb.services.*.*(..))",
             throwing = "ex"
     )
-
-    public void handleException(JoinPoint joinPoint, Exception ex) {
+    public void handleException(
+            final JoinPoint joinPoint,
+            final Exception ex) {
 
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
 
-        // Логируем сообщение об ошибке
         LOGGER.error(
                 "Exception in {}.{}(): {}",
                 className,

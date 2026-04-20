@@ -4,10 +4,12 @@ import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class RealBotCondition implements Condition {
+public final class RealBotCondition implements Condition {
 
     @Override
-    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+    public boolean matches(
+            final ConditionContext context,
+            final AnnotatedTypeMetadata metadata) {
         String mode = context.getEnvironment().getProperty("telegram.mode");
         return mode == null || !mode.equalsIgnoreCase("fake");
     }

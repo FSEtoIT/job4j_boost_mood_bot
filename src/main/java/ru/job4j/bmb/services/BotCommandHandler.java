@@ -12,31 +12,77 @@ import ru.job4j.bmb.repository.UserRepository;
 
 import java.util.Optional;
 
+/**
+ * Handler responsible for processing Telegram bot commands and callbacks.
+ * Supports commands such as start, mood logs, awards and reminder settings.
+ */
 @Service
 public class BotCommandHandler implements BeanNameAware {
 
+    /**
+     * Repository for user persistence operations.
+     */
     private final UserRepository userRepository;
-    private final MoodService moodService;
-    private final TgUI tgUI;
-    private String beanName;
-    private final String defaultReminderTime = "09:00"; // дефолтное время для напоминаний
 
-    public BotCommandHandler(UserRepository userRepository,
-                             MoodService moodService,
-                             TgUI tgUI) {
+    /**
+     * Service responsible for mood-related operations.
+     */
+    private final MoodService moodService;
+
+    /**
+     * Service responsible for building Telegram UI elements.
+     */
+    private final TgUI tgUI;
+
+    /**
+     * Spring bean name.
+     */
+    private String beanName;
+
+    /**
+     * Default reminder time used when user does not provide one.
+     */
+    private final String defaultReminderTime = "09:00";
+
+    /**
+     * Constructs handler with required dependencies.
+     *
+     * @param userRepository repository for users
+     * @param moodService service for mood logic
+     * @param tgUI service for Telegram UI
+     */
+    public BotCommandHandler(final UserRepository userRepository,
+                             final MoodService moodService,
+                             final TgUI tgUI) {
         this.userRepository = userRepository;
         this.moodService = moodService;
         this.tgUI = tgUI;
     }
 
-    public Optional<Content> commands(Message message) {
+    /**
+     * Processes incoming Telegram message commands.
+     *
+     * @param message incoming message
+     * @return optional response content
+     */
+    public Optional<Content> commands(final Message message) {
         if (message == null || message.getText() == null) {
             return Optional.empty();
         }
-        return handleCommand(message.getText(), message.getChatId(), message.getFrom().getId());
+        return handleCommand(
+                message.getText(),
+                message.getChatId(),
+                message.getFrom().getId()
+        );
     }
 
-    public Optional<Content> handleCallback(CallbackQuery callback) {
+    /**
+     * Processes callback queries from inline buttons.
+     *
+     * @param callback callback query
+     * @return optional response content
+     */
+    public Optional<Content> handleCallback(final CallbackQuery callback) {
         String data = callback.getData();
         long chatId = callback.getMessage().getChatId();
         Long clientId = callback.getFrom().getId();
@@ -50,7 +96,17 @@ public class BotCommandHandler implements BeanNameAware {
         }
     }
 
-    private Optional<Content> handleCommand(String text, long chatId, Long clientId) {
+    /**
+     * Handles textual bot commands.
+     *
+     * @param text command text
+     * @param chatId telegram chat id
+     * @param clientId telegram user id
+     * @return optional response content
+     */
+    private Optional<Content> handleCommand(final String text,
+                                            final long chatId,
+                                            final Long clientId) {
         if ("/start".equals(text)) {
             return handleStartCommand(chatId, clientId);
         } else if ("/week_mood_log".equals(text)) {
@@ -72,7 +128,8 @@ public class BotCommandHandler implements BeanNameAware {
                     content.setText("Напоминания включены на " + parts[1]);
                 } else {
                     user.setDailyReminderTime(defaultReminderTime);
-                    content.setText("Напоминания включены на " + defaultReminderTime);
+                    content.setText("Напоминания включены на "
+                            + defaultReminderTime);
                 }
                 userRepository.save(user);
             });
@@ -89,7 +146,15 @@ public class BotCommandHandler implements BeanNameAware {
         return Optional.empty();
     }
 
-    private Optional<Content> handleStartCommand(long chatId, Long clientId) {
+    /**
+     * Handles /start command and registers user if needed.
+     *
+     * @param chatId telegram chat id
+     * @param clientId telegram user id
+     * @return welcome message content
+     */
+    private Optional<Content> handleStartCommand(final long chatId,
+                                                 final Long clientId) {
         User user = userRepository.findByClientId(clientId)
                 .orElseGet(() -> {
                     User newUser = new User();
@@ -110,17 +175,28 @@ public class BotCommandHandler implements BeanNameAware {
         return Optional.of(content);
     }
 
+    /**
+     * Sets Spring bean name.
+     *
+     * @param name bean name
+     */
     @Override
-    public void setBeanName(String name) {
+    public void setBeanName(final String name) {
         this.beanName = name;
         System.out.println("Имя бина в Spring-контексте: " + name);
     }
 
+    /**
+     * Initializes bean after construction.
+     */
     @PostConstruct
     public void init() {
         System.out.println("BotCommandHandler инициализирован");
     }
 
+    /**
+     * Cleanup before bean destruction.
+     */
     @PreDestroy
     public void destroy() {
         System.out.println("BotCommandHandler уничтожается");
